@@ -10,16 +10,18 @@ from langchain.cache import InMemoryCache
 from langchain.globals import set_llm_cache
 from streamlit_extras.add_vertical_space import add_vertical_space
 from PyPDF2 import PdfReader
+from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
 from langchain.schema import messages_from_dict, messages_to_dict
 from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain, ConversationChain
+from langchain.chains import ConversationalRetrievalChain, ConversationChain, LLMChain
+from langchain.prompts import PromptTemplate
 import json
 
 
-ollama = ChatOllama(base_url='http://192.168.1.81:11434', model='dolphin2.2-mistral', temperature=0.1, streaming=True)
-
-set_llm_cache(InMemoryCache())
+ollama = ChatOllama(base_url='http://192.168.1.81:11434', model='neural-chat', temperature=0.1, streaming=True)
+persist_directory = "./vectorstores/db/"
+#set_llm_cache(InMemoryCache())
 
 
 ### CREATE VECTORSTORE FUNCTION
@@ -33,7 +35,7 @@ def db_lookup():
 
             len(documents)
 
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50)
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 
             texts = text_splitter.split_documents(documents)
 
@@ -60,7 +62,7 @@ def db_lookup():
 
     #        len(pdf_documents)
         
-            pdf_text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+            pdf_text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 
     #        st.write(pdf_text_splitter)
 
@@ -110,7 +112,7 @@ with st.sidebar:
     - [Streamlit](https://streamlit.io)
     - [Langchain](https://python.langchain.com)
     - [Ollama](https://ollama.com)
-    - [Mistral-7b](https://huggingface.co/illuin/mistral-7b)
+    - [Neural-Chat](https://huggingface.co/illuin/mistral-7b)
 
     ''')
     add_vertical_space(5)
@@ -119,43 +121,44 @@ with st.sidebar:
 
 ### DB VECTOR LOOKUP FUNCTION
 
-def db_vector_lookup(question):
-    if question is not None:
-        persist_directory = "./vectorstores/db/"
-        embeddings = GPT4AllEmbeddings()
-        vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
+#def db_vector_lookup(question):
+#    if question is not None:
+#        persist_directory = "./vectorstores/db/"
+#        embeddings = GPT4AllEmbeddings()
+#        vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
 
-        retriever = vectordb.as_retriever()
-        docs = retriever.get_relevant_documents(question)
-        len(docs)
-        retriever = vectordb.as_retriever(search_kwags={"k": 3})
-        retriever.search_type = "similarity"
-        retriever.search_kwargs = {"k": 3}
-        qachain = RetrievalQA.from_chain_type(ollama, chain_type="stuff", retriever=retriever, return_source_documents=True)
+#        retriever = vectordb.as_retriever()
+#        docs = retriever.get_relevant_documents(question)
+#        len(docs)
+#        retriever = vectordb.as_retriever(search_kwags={"k": 3})
+#        retriever.search_type = "similarity"
+#        retriever.search_kwargs = {"k": 3}
+#        qachain = RetrievalQA.from_chain_type(ollama, chain_type="stuff", retriever=retriever, return_source_documents=True)
 
-        return qachain({"query": question})
+#        return qachain({"query": question})
 
 st.title('ANTLATT.com')
 st.header('Chat with Your Documents')
-
+if pdf:
+    st.write("PDF database currently loaded: ", pdf.name)
 
 ###Query database with url or pdf
-question = st.text_input('Enter your question:', placeholder = 'enter a question here.', disabled=False)
+#question = st.text_input('Enter your question:', placeholder = 'enter a question here.', disabled=False)
 
-result = []
-with st.form('myform3', clear_on_submit=True):
-    persist_directory = "/vectorstores/db/"
+#result = []
+#with st.form('myform3', clear_on_submit=True):
+#    persist_directory = "/vectorstores/db/"
 
-    submitted = st.form_submit_button('Submit', disabled=not(question))
-    if submitted:
-        with st.spinner('Operation In Progress...'):
-            response = db_vector_lookup(question)
-            result.append(response)
+#    submitted = st.form_submit_button('Submit', disabled=not(question))
+#    if submitted:
+#        with st.spinner('Operation In Progress...'):
+#            response = db_vector_lookup(question)
+#            result.append(response)
 
 
-if len(result):
-    with st.container():
-       st.write(response)
+#if len(result):
+#    with st.container():
+#       st.write(response)
 
 
 ### Chat App
