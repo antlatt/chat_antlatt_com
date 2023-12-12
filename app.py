@@ -159,33 +159,71 @@ if len(result):
 
 
 ### Chat App
-user_prompt = st.chat_input('Enter your message:', key="user_prompt")
-if user_prompt:
-    st.write(f'You: {user_prompt}'
-)
+#user_prompt = st.chat_input('Enter your message:', key="user_prompt")
+#if user_prompt:
+#    st.write(f'You: {user_prompt}'
+#)
 
 # Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+#if "messages" not in st.session_state:
+#    st.session_state.messages = []
 
 # Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+#for message in st.session_state.messages:
+#    with st.chat_message(message["role"]):
+#        st.markdown(message["content"])
 
 # React to user input
-if prompt := st.chat_input("Send a Chat Message to the AI Assistant"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+#if prompt := st.chat_input("Send a Chat Message to the AI Assistant"):
+#    st.session_state.messages.append({"role": "user", "content": prompt})
+#    with st.chat_message("user"):
+#        st.markdown(prompt)
 
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = ollama.predict(prompt)
-        message_placeholder.markdown(full_response)
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+#    with st.chat_message("assistant"):
+#        message_placeholder = st.empty()
+#        full_response = ollama.predict(prompt)
+#        message_placeholder.markdown(full_response)
+#    st.session_state.messages.append({"role": "assistant", "content": full_response})
 
+### NEW CHAT APP ####
+history = StreamlitChatMessageHistory(key="chat_messages")
 
+msgs = StreamlitChatMessageHistory(key="special_app_key")
+
+memory = ConversationBufferMemory(memory_key="history", chat_memory=msgs)
+if len(msgs.messages) == 0:
+    msgs.add_ai_message("How can I help you?")
+
+template = """You are a helpful AI chatbot having a conversation with a human.
+{history}
+Human: {human_input}
+AI: """
+prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
+
+llm_chain = LLMChain(llm=ollama, prompt=prompt, verbose=True, memory=memory)
+
+#conversation = ConversationalRetrievalChain.from_llm(llm=ollama, retriever=retriever, memory=memory)
+
+for msg in msgs.messages:
+    st.chat_message(msg.type).write(msg.content)
+
+if prompt := st.chat_input():
+    st.chat_message("human").write(prompt)
+    persist_directory = "./vectorstores/db/"
+    embeddings = GPT4AllEmbeddings()
+    vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
+    retriever = vectordb.as_retriever()
+    docs = retriever.get_relevant_documents(prompt)
+    len(docs)
+    retriever = vectordb.as_retriever(search_kwags={"k": 3})
+    retriever.search_type = "similarity"
+    retriever.search_kwargs = {"k": 3}
+    conversation = ConversationalRetrievalChain.from_llm(llm=ollama, retriever=retriever, verbose=True, memory=memory)
+    qachain = RetrievalQA.from_chain_type(ollama, chain_type="stuff", retriever=retriever, return_source_documents=False, verbose=True, memory=memory)
+    lookup = qachain({"query": prompt})
+
+    response = llm_chain.run(prompt)
+    st.chat_message("ai").write(response)
 
 ### Chat App End
 
