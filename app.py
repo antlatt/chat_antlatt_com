@@ -195,7 +195,7 @@ msgs = StreamlitChatMessageHistory(key="special_app_key")
 
 memory = ConversationBufferMemory(memory_key="history", chat_memory=msgs)
 if len(msgs.messages) == 0:
-    msgs.add_ai_message("How can I help you?")
+    msgs.add_ai_message("Hello, How can I help you today?")
 
 template = """You are a helpful AI chatbot having a conversation with a human.
 {history}
