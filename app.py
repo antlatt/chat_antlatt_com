@@ -10,6 +10,7 @@ from langchain.cache import InMemoryCache
 from langchain.globals import set_llm_cache
 from streamlit_extras.add_vertical_space import add_vertical_space
 from PyPDF2 import PdfReader
+from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
 from langchain.schema import messages_from_dict, messages_to_dict
@@ -18,7 +19,7 @@ from langchain.chains import ConversationalRetrievalChain, ConversationChain, LL
 from langchain.prompts import PromptTemplate
 import json
 
-
+st.set_page_config(page_title="chat.antlatt.com", page_icon=None, layout="centered", initial_sidebar_state="collapsed")
 ollama = ChatOllama(base_url='http://192.168.1.81:11434', model='neural-chat', temperature=0.1, streaming=True)
 persist_directory = "./vectorstores/db/"
 #set_llm_cache(InMemoryCache())
@@ -50,8 +51,21 @@ def db_lookup():
 
             vectordb.persist()
             vectordb = None
-
     except:
+        if dir is not None:
+            pdf_folder_path = './pdfs/'
+            dir_loader = PyPDFDirectoryLoader(pdf_folder_path)
+            dir_docs = dir_loader.load()
+            len(dir_docs)
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+            dir_texts = text_splitter.split_documents(dir_docs)
+            len(dir_exts)
+            persist_directory = "./vectorstores/db/"
+            embeddings = GPT4AllEmbeddings()
+            dir_vectordb = Chroma.from_documents(documents=dir_texts, embedding=embeddings, persist_directory=persist_directory)
+            dir_vectordb.persist()
+            dir_vectordb = None
+    finally:
         if pdf is not None:
             pdf_reader = PdfReader(pdf)
     #        st.write(pdf_reader)
@@ -92,13 +106,17 @@ with st.sidebar:
 ##SIDEBAR PDF INPUT    
     pdf = st.sidebar.file_uploader("Upload a PDF", type="pdf", disabled=False)
 
+##SIDEBAR DIR INPUT##
+    dir = st.selectbox('load stored pdf directory?', ('Yes', 'No', 'None'))
+    st.write('You selected:', dir)
+
 ###SIDEBAR URL INPUT                
     url = st.sidebar.text_input('Enter a URL', placeholder="enter url here", disabled=False)
     with st.form('myform2', clear_on_submit=True):
         
-        persist_directory = "/vectorstores/db"
+        persist_directory = "./vectorstores/db"
 
-        submitted = st.form_submit_button('Submit', disabled=not(url or pdf))
+        submitted = st.form_submit_button('Submit', disabled=not(url or dir or pdf))
         if submitted:
             with st.spinner('Creating VectorStore, Saving to Disk...'):
                 db_lookup()
@@ -139,8 +157,10 @@ with st.sidebar:
 
 st.title('ANTLATT.com')
 st.header('Chat with Your Documents')
+if dir:
+    st.write('Current Database: AA Literature (Big Book, 12 & 12, Living Sober, Language of the Heart)')
 if pdf:
-    st.write("PDF database currently loaded: AA (Big Book, 12 & 12, Living Sober, Language of the Heart)  ", pdf.name)
+    st.write("PDF database currently loaded: ", pdf.name)
 
 ###Query database with url or pdf
 #question = st.text_input('Enter your question:', placeholder = 'enter a question here.', disabled=False)
@@ -195,9 +215,9 @@ msgs = StreamlitChatMessageHistory(key="special_app_key")
 
 memory = ConversationBufferMemory(memory_key="history", chat_memory=msgs)
 if len(msgs.messages) == 0:
-    msgs.add_ai_message("Hello, How can I help you today?")
+    msgs.add_ai_message("Hello, how can I help you today?")
 
-template = """You are a helpful AI chatbot having a conversation with a human.
+template = """You are a friendly and helpful AI chatbot named Jarvis having a conversation with a human. Give extremely detailed answers to the human's questions using the context provided. 
 {history}
 Human: {human_input}
 AI: """
@@ -218,9 +238,9 @@ if prompt := st.chat_input():
     retriever = vectordb.as_retriever()
     docs = retriever.get_relevant_documents(prompt)
     len(docs)
-    retriever = vectordb.as_retriever(search_kwags={"k": 3})
+    retriever = vectordb.as_retriever(search_kwags={"k": 5})
     retriever.search_type = "similarity"
-    retriever.search_kwargs = {"k": 3}
+    retriever.search_kwargs = {"k": 5}
     conversation = ConversationalRetrievalChain.from_llm(llm=ollama, retriever=retriever, verbose=True, memory=memory)
     qachain = RetrievalQA.from_chain_type(ollama, chain_type="stuff", retriever=retriever, return_source_documents=False, verbose=True, memory=memory)
     lookup = qachain({"query": prompt})
