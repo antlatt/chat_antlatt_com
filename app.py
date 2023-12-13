@@ -158,7 +158,7 @@ with st.sidebar:
 
 st.title('ANTLATT.com')
 st.header('Chat with Your Documents')
-st.write(os.listdir('./pdfs/'))
+st.markdown("PDF's in Current Database: " os.listdir('./pdfs/'))
 if dir:
     st.write('Current Database: AA Literature (Big Book, 12 & 12, Living Sober, Language of the Heart)')
 if pdf:
