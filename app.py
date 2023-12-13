@@ -18,6 +18,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain, ConversationChain, LLMChain
 from langchain.prompts import PromptTemplate
 import json
+import os
 
 st.set_page_config(page_title="chat.antlatt.com", page_icon=None, layout="centered", initial_sidebar_state="collapsed")
 ollama = ChatOllama(base_url='http://192.168.1.81:11434', model='neural-chat', temperature=0.1, streaming=True)
@@ -157,6 +158,7 @@ with st.sidebar:
 
 st.title('ANTLATT.com')
 st.header('Chat with Your Documents')
+st.write(os.listdir('./pdfs/'))
 if dir:
     st.write('Current Database: AA Literature (Big Book, 12 & 12, Living Sober, Language of the Heart)')
 if pdf:
