@@ -140,7 +140,7 @@ with st.sidebar:
 st.title('ANTLATT.com')
 st.header('Chat with Your Documents')
 if pdf:
-    st.write("PDF database currently loaded: ", pdf.name)
+    st.write("PDF database currently loaded: AA (Big Book, 12 & 12, Living Sober, Language of the Heart)  ", pdf.name)
 
 ###Query database with url or pdf
 #question = st.text_input('Enter your question:', placeholder = 'enter a question here.', disabled=False)
