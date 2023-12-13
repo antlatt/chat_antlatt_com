@@ -243,9 +243,9 @@ if prompt := st.chat_input():
     retriever = vectordb.as_retriever(search_kwags={"k": 5})
     retriever.search_type = "similarity"
     retriever.search_kwargs = {"k": 5}
-    conversation = ConversationalRetrievalChain.from_llm(llm=ollama, retriever=retriever, verbose=True, memory=memory)
-    qachain = RetrievalQA.from_chain_type(ollama, chain_type="stuff", retriever=retriever, return_source_documents=False, verbose=True, memory=memory)
-    lookup = qachain({"query": prompt})
+#    conversation = ConversationalRetrievalChain.from_llm(llm=ollama, retriever=retriever, verbose=True, memory=memory)
+#    qachain = RetrievalQA.from_chain_type(ollama, chain_type="stuff", retriever=retriever, return_source_documents=False, verbose=True, memory=memory)
+#    lookup = qachain({"query": prompt})
 
     response = llm_chain.run(prompt)
     st.chat_message("ai").write(response)
