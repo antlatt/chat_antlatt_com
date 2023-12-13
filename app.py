@@ -158,9 +158,9 @@ with st.sidebar:
 
 st.title('ANTLATT.com')
 st.header('Chat with Your Documents')
-st.markdown("PDF's in Current Database: " os.listdir('./pdfs/'))
+st.markdown("PDF's in Current Database: ", os.listdir('./pdfs/'))
 if dir:
-    st.write("Current Database: " os.listdir('./pdfs/'))
+    st.markdown("Current Database: ", os.listdir('./pdfs/'))
 if pdf:
     st.write("PDF database currently loaded: ", pdf.name)
 
