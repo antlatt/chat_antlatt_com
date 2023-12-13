@@ -59,7 +59,7 @@ def db_lookup():
             len(dir_docs)
             text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
             dir_texts = text_splitter.split_documents(dir_docs)
-            len(dir_exts)
+            len(dir_texts)
             persist_directory = "./vectorstores/db/"
             embeddings = GPT4AllEmbeddings()
             dir_vectordb = Chroma.from_documents(documents=dir_texts, embedding=embeddings, persist_directory=persist_directory)
