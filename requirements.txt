@@ -110,6 +110,7 @@ pymdown-extensions==10.4
 pyparsing==3.1.1
 PyPDF2==3.0.1
 PyPDF
+pypdf
 PyPika==0.48.9
 pyreadline3==3.4.1
 python-dateutil==2.8.2
