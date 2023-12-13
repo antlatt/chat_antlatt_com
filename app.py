@@ -107,7 +107,7 @@ with st.sidebar:
     pdf = st.sidebar.file_uploader("Upload a PDF", type="pdf", disabled=False)
 
 ##SIDEBAR DIR INPUT##
-    dir = st.selectbox('load stored pdf directory?', ('Yes', 'No', 'None'))
+    dir = st.selectbox('load stored pdf directory?', ('Yes', 'No', 'None'), index=None)
     st.write('You selected:', dir)
 
 ###SIDEBAR URL INPUT                
