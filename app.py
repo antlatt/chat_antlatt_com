@@ -21,7 +21,7 @@ import json
 import os
 
 st.set_page_config(page_title="chat.antlatt.com", page_icon=None, layout="centered", initial_sidebar_state="collapsed")
-ollama = ChatOllama(base_url='http://192.168.1.81:11434', model='neural-chat', temperature=0.1, streaming=True)
+ollama = ChatOllama(base_url='http://192.168.1.113:11434', model='mistral', temperature=0.1, streaming=True)
 persist_directory = "./vectorstores/db/"
 #set_llm_cache(InMemoryCache())
 
